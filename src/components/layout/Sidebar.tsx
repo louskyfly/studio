@@ -94,7 +94,16 @@ export const Sidebar = ({ onNavigate }: { onNavigate?: () => void }) => {
         <div
           className={cn('navitem group', selected && 'active')}
           style={{ paddingLeft: 8 + depth * 14 }}
+          role="button"
+          tabIndex={0}
+          data-folder-id={folder.id}
           onClick={() => go({ name: 'library', folderId: folder.id })}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              go({ name: 'library', folderId: folder.id })
+            }
+          }}
           onDoubleClick={() => {
             setName(folder.name)
             setRenaming(folder)

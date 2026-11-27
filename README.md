@@ -149,15 +149,17 @@ Les cartes utilisent les données **Natural Earth** (domaine public) via `world-
 
 Le build est 100 % statique (routing par ancre), donc hébergeable partout : GitHub Pages, Netlify, Cloudflare Pages, un simple dossier.
 
-### GitHub Pages
-Le workflow `.github/workflows/deploy.yml` construit et publie à chaque push sur `main`.
+### GitHub Pages — guide pas à pas
+Voir **[DEPLOIEMENT.md](DEPLOIEMENT.md)**. Le dépôt doit être créé sur le **compte GitHub dédié**, pas sur le compte habituel. Le script `scripts/deploy-github.ps1` refuse de publier si le compte actif est `louskyfly`.
 
-1. Créer un dépôt **sur le compte GitHub dédié** (pas le compte habituel).
-2. Pousser le projet sur `main`.
-3. Dans *Settings → Pages*, choisir **GitHub Actions** comme source.
-4. L’URL est `https://<compte>.github.io/<dépôt>/`.
+```powershell
+gh auth login                                  # se connecter avec l'autre compte
+powershell -ExecutionPolicy Bypass -File .\scripts\deploy-github.ps1 -Repo studio
+```
 
-Aucune variable d’environnement n’est nécessaire : les clés IA sont saisies par l’utilisateur dans l’application.
+Le script crée le dépôt, pousse `main`, active Pages (source : GitHub Actions) et affiche l’URL. Le workflow `.github/workflows/deploy.yml` republie à chaque push.
+
+Aucune variable d’environnement n’est nécessaire : les clés IA sont saisies par l’utilisateur dans l’application, et ne quittent pas son navigateur.
 
 ### Hébergement alternatif
 `npm run build` puis publier `dist/`. Configurer une réécriture vers `index.html` n’est pas nécessaire (hash routing).
@@ -172,14 +174,25 @@ Les scripts Playwright couvrent les parcours critiques :
 npm run dev            # dans un terminal
 node scripts/e2e.mjs     # capture, édition, exports PPTX/PDF, iPad, téléphone
 node scripts/interact.mjs # édition de texte, déplacement, annulation, persistance, thème, présentation
+node scripts/qa2.mjs      # page blanche, recherche, dossiers
 ```
+
+Le pipeline IA complet (plan → lots → normalisation → mise en page → assistant → export) se teste sans clé grâce à un serveur local qui respecte le contrat de l’API :
+
+```bash
+node scripts/mock-ai.mjs   # terminal 1
+node scripts/test-ai.mjs   # terminal 2
+```
+
+`mock-ai.mjs` est un **outil de test**, jamais embarqué dans l’application : il permet de vérifier le transport, le JSON, les cartes, les frises et les exports même sans fournisseur configuré. La qualité pédagogique réelle dépend du modèle choisi.
 
 Ils vérifient notamment :
 - la création et l’ouverture d’une présentation ;
 - l’édition d’un texte et sa persistance après rechargement ;
 - le déplacement d’un élément et l’annulation ;
 - l’ajout d’une diapositive et le mode présentation ;
-- l’export PPTX (nombre de diapositives, texte natif, image de carte) et PDF (nombre de pages).
+- l’export PPTX (nombre de diapositives, texte natif, image de carte) et PDF (nombre de pages) ;
+- l’extraction d’un PDF et la génération complète d’un diaporama de 10 diapositives.
 
 Les captures sont écrites dans `shots/` (ignoré par Git).
 
