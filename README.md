@@ -6,6 +6,26 @@ Application **local-first** : toutes les présentations vivent dans le navigateu
 
 ---
 
+## État et vérifications
+
+Version **1.0**, utilisable dès maintenant en local. Ce qui est vérifié automatiquement (Playwright, Chromium) :
+
+- création d’une page blanche et d’un diaporama complet (10 diapositives) ;
+- édition d’un texte dans la diapositive, persistance après rechargement ;
+- déplacement d’un élément, annulation, rétablissement ;
+- ajout d’une diapositive, réorganisation, mode présentation ;
+- changement de thème sans perte de contenu ;
+- recherche plein texte et navigation par dossiers ;
+- export PPTX (nombre de diapositives, texte natif, image de carte) et PDF (pages, rendu contrôlé) ;
+- extraction d’un PDF et assistant IA sur une diapositive.
+
+Deux éléments dépendent de vous :
+
+1. **La clé du modèle** (Gemini ou Ollama) : sans elle, l’interface fonctionne mais la génération est désactivée. Le pipeline complet a été validé avec un serveur de test local respectant le contrat de l’API, pas avec une clé réelle.
+2. **Le compte GitHub de destination** : voir [DEPLOIEMENT.md](DEPLOIEMENT.md). Le dépôt doit être créé sur un autre compte que le compte habituel.
+
+---
+
 ## Ce qui fonctionne
 
 ### Bibliothèque

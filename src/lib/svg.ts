@@ -193,10 +193,11 @@ export const chartSvg = (el: ChartEl, w: number, h: number, theme: SvgTheme): st
   } else {
     const horizontal = el.chart === 'hbar'
     const legendH = el.legend === false || el.series.length < 2 ? 0 : fs * 1.7
+    const sourceH = el.source ? fs * 1.3 : 0
     const m = {
       top: titleH + fs * 0.4,
       right: fs * 0.8,
-      bottom: horizontal ? fs * 1.2 : fs * 2.6 + legendH,
+      bottom: (horizontal ? fs * 1.2 : fs * 2.6 + legendH) + sourceH,
       left: horizontal ? Math.min(w * 0.32, fs * 7.5) : fs * 4.1,
     }
     const plotW = w - m.left - m.right
@@ -614,7 +615,7 @@ export const mapSvg = (el: MapEl, w: number, h: number, features: CountryFeature
   if (el.caption) {
     const fs = Math.max(11, Math.min(16, w / 50))
     const label = truncate(el.caption, fs, w * 0.58)
-    const tw = label.length * fs * 0.62 + 18
+    const tw = label.length * fs * 0.68 + 22
     parts.push(`<rect x="8" y="${n(h - fs * 2.15)}" width="${n(tw)}" height="${n(fs * 1.65)}" rx="4" fill="#ffffff" opacity="0.86"/>`)
     parts.push(
       `<text x="15" y="${n(h - fs * 0.95)}" font-size="${n(fs)}" font-family="Georgia, serif" fill="${esc(labelColor)}">${esc(label)}</text>`,
