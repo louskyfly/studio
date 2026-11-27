@@ -550,6 +550,7 @@ export const GenerateWizard = ({ initialMode }: { initialMode: CreateMode }) => 
             ) : (
               <span>{mode === 'topic' ? 'Décrivez le sujet pour continuer.' : mode === 'notes' ? 'Collez vos notes pour continuer.' : 'Ajoutez un document lisible pour continuer.'}</span>
             )}
+            {!aiReady && <span className="block text-[#9a6b1f]">Configure un modèle (Gemini ou Ollama) pour lancer la génération.</span>}
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <Button
@@ -561,7 +562,7 @@ export const GenerateWizard = ({ initialMode }: { initialMode: CreateMode }) => 
             >
               Page blanche
             </Button>
-            <Button variant="primary" disabled={!valid} onClick={generate} className="shrink-0 px-4">
+            <Button variant="primary" disabled={!valid || !aiReady} onClick={generate} className="shrink-0 px-4">
               <Sparkles size={15} /> Générer la présentation <ArrowRight size={14} />
             </Button>
           </div>
