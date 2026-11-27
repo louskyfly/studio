@@ -1,5 +1,7 @@
 # Studio
 
+**En ligne : [louskyfly.github.io/studio](https://louskyfly.github.io/studio/)**
+
 **Studio** est un atelier de présentations pédagogiques assisté par IA, pensé pour un professeur d’histoire-géographie. Il génère des diaporamas à partir d’un sujet, de documents ou de notes, les met en page, les laisse entièrement modifier et les exporte en PowerPoint **réellement éditable** ou en PDF.
 
 Application **local-first** : toutes les présentations vivent dans le navigateur (IndexedDB), sans compte, sans serveur, sans abonnement. L’IA est un choix explicite : Ollama en local (gratuit, privé) ou une API externe (Gemini, OpenAI, Mistral, OpenRouter…).
@@ -22,7 +24,7 @@ Version **1.0**, utilisable dès maintenant en local. Ce qui est vérifié autom
 Deux éléments dépendent de vous :
 
 1. **La clé du modèle** (Gemini ou Ollama) : sans elle, l’interface fonctionne mais la génération est désactivée. Le pipeline complet a été validé avec un serveur de test local respectant le contrat de l’API, pas avec une clé réelle.
-2. **Le compte GitHub de destination** : voir [DEPLOIEMENT.md](DEPLOIEMENT.md). Le dépôt doit être créé sur un autre compte que le compte habituel.
+2. **La vérification en ligne** : le site est publié sur [louskyfly.github.io/studio](https://louskyfly.github.io/studio/) ; il reste à y ajouter la clé IA dans les réglages de votre navigateur.
 
 ---
 
@@ -167,22 +169,38 @@ Les cartes utilisent les données **Natural Earth** (domaine public) via `world-
 
 ## Déploiement
 
-Le build est 100 % statique (routing par ancre), donc hébergeable partout : GitHub Pages, Netlify, Cloudflare Pages, un simple dossier.
+Le build est 100 % statique (routing par ancre).
 
-### GitHub Pages — guide pas à pas
-Voir **[DEPLOIEMENT.md](DEPLOIEMENT.md)**. Le dépôt doit être créé sur le **compte GitHub dédié**, pas sur le compte habituel. Le script `scripts/deploy-github.ps1` refuse de publier si le compte actif est `louskyfly`.
+### Déploiement actuel
+- Dépôt : [github.com/louskyfly/studio](https://github.com/louskyfly/studio) — **public**.
+- Site : [louskyfly.github.io/studio](https://louskyfly.github.io/studio/).
+- Méthode : build publié sur la branche `gh-pages`, source GitHub Pages `gh-pages / (root)`.
+- Le compte `louskyfly` a été choisi explicitement par le propriétaire, en remplacement de la contrainte initiale « autre compte ».
+
+Mettre à jour le site :
 
 ```powershell
-gh auth login                                  # se connecter avec l'autre compte
-powershell -ExecutionPolicy Bypass -File .\scripts\deploy-github.ps1 -Repo studio
+powershell -ExecutionPolicy Bypass -File .\scripts\publish-pages.ps1
 ```
 
-Le script crée le dépôt, pousse `main`, active Pages (source : GitHub Actions) et affiche l’URL. Le workflow `.github/workflows/deploy.yml` republie à chaque push.
+ou `npm run deploy`. Le script construit, publie `dist/` sur `gh-pages` et ajoute `.nojekyll`.
 
-Aucune variable d’environnement n’est nécessaire : les clés IA sont saisies par l’utilisateur dans l’application, et ne quittent pas son navigateur.
+### Workflow GitHub Actions (optionnel)
+Le workflow prêt à l’emploi est conservé dans `scripts/github-pages-workflow.yml` : le jeton `gh` actuel n’a pas le scope `workflow`, donc GitHub refuse de le pousser dans `.github/workflows/`. Pour l’activer plus tard :
 
-### Hébergement alternatif
-`npm run build` puis publier `dist/`. Configurer une réécriture vers `index.html` n’est pas nécessaire (hash routing).
+```powershell
+gh auth refresh -h github.com -s workflow
+mkdir .github\workflows
+copy scripts\github-pages-workflow.yml .github\workflows\deploy.yml
+git add .github/workflows/deploy.yml
+git commit -m "Active le deploiement GitHub Actions"
+git push
+```
+
+Puis dans *Settings → Pages*, choisir **GitHub Actions**. Le workflow republiera à chaque push sur `main`.
+
+### Autre compte / hébergement alternatif
+`npm run build` puis publier `dist/` où l’on veut (Netlify, Cloudflare Pages, serveur statique). Aucune réécriture vers `index.html` n’est nécessaire (hash routing). Aucune variable d’environnement : les clés IA sont saisies dans l’application.
 
 ---
 
@@ -195,6 +213,7 @@ npm run dev            # dans un terminal
 node scripts/e2e.mjs     # capture, édition, exports PPTX/PDF, iPad, téléphone
 node scripts/interact.mjs # édition de texte, déplacement, annulation, persistance, thème, présentation
 node scripts/qa2.mjs      # page blanche, recherche, dossiers
+node scripts/check-live.mjs # vérifie le site publié (HTTP, démo, service worker)
 ```
 
 Le pipeline IA complet (plan → lots → normalisation → mise en page → assistant → export) se teste sans clé grâce à un serveur local qui respecte le contrat de l’API :

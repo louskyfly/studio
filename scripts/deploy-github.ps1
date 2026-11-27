@@ -2,7 +2,8 @@
 # Usage : powershell -ExecutionPolicy Bypass -File .\scripts\deploy-github.ps1 -Repo studio
 param(
   [string]$Repo = "studio",
-  [switch]$Private
+  [switch]$Private,
+  [switch]$AllowMainAccount
 )
 
 $ErrorActionPreference = "Stop"
@@ -11,8 +12,8 @@ Set-Location $repoRoot
 
 $account = (gh api user --jq .login).Trim()
 Write-Host "Compte GitHub actif : $account"
-if ($account -eq "louskyfly") {
-  throw "Le compte actif est le compte habituel. Lance 'gh auth login' avec le compte dédié, puis relance ce script."
+if ($account -eq "louskyfly" -and -not $AllowMainAccount) {
+  throw "Le compte actif est le compte habituel. Lance 'gh auth login' avec le compte dédié, ou ajoute -AllowMainAccount pour forcer."
 }
 
 $exists = $false

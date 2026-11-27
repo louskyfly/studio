@@ -1,67 +1,64 @@
-# Déploiement sur GitHub — compte dédié
+# Déploiement
 
-Le dépôt doit vivre sur **un autre compte GitHub que le compte habituel** (`louskyfly`). Ce script refuse de publier si le compte actif est justement `louskyfly`.
+## État actuel
 
-Aucun jeton n’est écrit dans le projet : l’authentification passe par `gh`, qui stocke le jeton dans le trousseau du système.
+| | |
+| --- | --- |
+| Dépôt | [github.com/louskyfly/studio](https://github.com/louskyfly/studio) (public) |
+| Site | [https://louskyfly.github.io/studio/](https://louskyfly.github.io/studio/) |
+| Branche publiée | `gh-pages` (build statique, `.nojekyll`) |
+| Source Pages | `gh-pages` / racine |
+| Vérifié | HTTP 200, application chargée, démo 7 diapositives, service worker actif |
 
-## 1. Se connecter avec le compte dédié
+> Le compte `louskyfly` a été retenu sur demande explicite du propriétaire, alors que le brief initial demandait un autre compte. Ce choix est assumé et documenté ici.
 
-Dans **ton** terminal PowerShell (pas dans l’agent) :
+## Mettre à jour le site
 
 ```powershell
-gh auth login
+powershell -ExecutionPolicy Bypass -File .\scripts\publish-pages.ps1
 ```
 
-Choisir `GitHub.com`, `HTTPS`, `Login with a web browser`, puis se connecter avec **l’autre compte**. Vérifier :
+ou :
 
 ```powershell
-gh api user --jq .login
-```
-
-La commande doit afficher le compte dédié, pas `louskyfly`.
-
-## 2. Créer le dépôt et publier
-
-Depuis le dossier du projet :
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\deploy-github.ps1 -Repo studio
+npm run deploy
 ```
 
 Le script :
 
-1. vérifie le compte actif ;
-2. crée le dépôt public `studio` (Pages gratuit) et pousse `main` ;
-3. active GitHub Pages en mode **GitHub Actions** ;
-4. attend le déploiement et affiche l’URL.
+1. construit le projet (`npm run build`, types compris) ;
+2. copie `dist/` dans un dossier temporaire ;
+3. y crée un dépôt `gh-pages` et force le push vers `origin` ;
+4. ajoute `.nojekyll`.
 
-Pour un dépôt privé (nécessite GitHub Pro pour Pages) :
+GitHub Pages reconstruit en une à deux minutes.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\deploy-github.ps1 -Repo studio -Private
-```
+## Pourquoi pas GitHub Actions ?
 
-## 3. Vérifier
+Le workflow existe, prêt à l’emploi : `scripts/github-pages-workflow.yml`. Il n’a pas pu être poussé dans `.github/workflows/` car le jeton OAuth de `gh` n’a pas le scope **workflow** ; GitHub refuse alors tout le push.
 
-- Actions : l’onglet *Actions* du dépôt doit montrer « Déployer Studio » en vert.
-- URL : `https://<compte>.github.io/studio/`.
-- Ouvrir l’URL, créer une présentation, vérifier qu’elle survit à un rafraîchissement.
-- Ajouter la clé IA **dans l’application en ligne** (Réglages → Intelligence artificielle). La clé reste dans le navigateur de l’appareil.
-
-## Mises à jour
+Pour l’activer plus tard :
 
 ```powershell
-git add -A
-git commit -m "Description du changement"
+gh auth refresh -h github.com -s workflow
+mkdir .github\workflows
+copy scripts\github-pages-workflow.yml .github\workflows\deploy.yml
+git add .github/workflows/deploy.yml
+git commit -m "Active le deploiement GitHub Actions"
 git push
 ```
 
-Le workflow republie automatiquement.
+Puis *Settings → Pages → Source : GitHub Actions*. Le workflow reconstruit et publie à chaque push sur `main`.
 
-## Retour au compte habituel
+## Autre compte GitHub
 
-Une fois le déploiement terminé :
+Le script `scripts/deploy-github.ps1` reste disponible pour un dépôt sur un autre compte. Il refuse `louskyfly` par défaut ; ajouter `-AllowMainAccount` pour passer outre.
 
 ```powershell
-gh auth switch --user louskyfly
+gh auth login
+powershell -ExecutionPolicy Bypass -File .\scripts\deploy-github.ps1 -Repo studio
 ```
+
+## Clés IA
+
+Aucune variable d’environnement, aucun secret dans le dépôt. La clé du modèle est saisie par l’utilisateur dans **Réglages → Intelligence artificielle** et reste dans le navigateur de l’appareil.
